@@ -11,12 +11,12 @@
 template <typename Value>
 class Node {
 public:
-	Node(const std::string key, const Value& val);
+	Node(const std::string key, Value* val);
 	virtual ~Node();
 	const std::string getKey() const;
 	const Value& getValue() const;
 	std::string getKey();
-	Value& getValue();
+	Value* getValue();
 	Node* getNext() const;
 	void setNext(Node* next);
 	void setKey(const std::string key);
@@ -24,16 +24,16 @@ public:
 
 private:
 	std::string key;
-	Value val;
+	Value *val;
 	Node* next;
 };
 
 //Implentations for Node class
 template <typename Value> 
-Node<Value>::Node(const std::string k, const Value& v) {
+Node<Value>::Node(const std::string k, Value* v) {
 	key = k;
 	val = v;
-	next = NULL;
+	next = nullptr;
 }
 
 template <typename Value>
@@ -57,7 +57,7 @@ std::string Node<Value>::getKey() {
 }
 
 template<typename Value>
-Value& Node<Value>::getValue() {
+Value* Node<Value>::getValue() {
 	return val;
 }
 
@@ -87,10 +87,11 @@ class HashMap {
 public:
 	HashMap(int size);
 	~HashMap();
-	bool set(std::string k, Value v);
-	Value get(std::string k);
+	bool set(std::string k, Value& v);
+	bool set(std::string k, Value* v);
+	Value* get(std::string k);
 	//delete is a keyword in C++, needed to add underscore in the function name
-	Value delete_(std::string k);
+	Value* delete_(std::string k);
 	float load();
 
 private:
@@ -106,7 +107,7 @@ HashMap<Value>::HashMap(int size) {
 	numItems = 0;
 	table = new Node<Value>*[tableSize];
 	for (int i = 0; i < tableSize; i++) {
-		table[i] = NULL;
+		table[i] = nullptr;
 	}
 }
 
@@ -116,11 +117,12 @@ HashMap<Value>::~HashMap(){
 }
 
 template<typename Value>
-bool HashMap<Value>::set(std::string k, Value v) {
-	unsigned long hashVal= hashFn(k);
-	std::cout << hashVal <<std::endl;
+bool HashMap<Value>::set(std::string k, Value* v) {
+	unsigned long hashVal= (hashFn(k))%10;
+	//unsigned long hashVal = (hashFn(k))%tableSize;
+	std::cout << "Hash: " << hashVal <<std::endl;
 	Node<Value> *start = table[hashVal];
-	if (start == NULL) {
+	if (start == nullptr) {
 		//First entry in table chain
 		Node<Value> *entry = new Node<Value>(k, v);
 		table[hashVal] = entry;
@@ -128,10 +130,10 @@ bool HashMap<Value>::set(std::string k, Value v) {
 		return true;
 	}
 	else {
-		while (start->getNext() != NULL && start->getKey() != k) {
+		while (start->getNext() != nullptr && start->getKey() != k) {
 			start = start->getNext();
 		}
-		if (start->getNext() == NULL) {
+		if (start->getNext() == nullptr) {
 			Node<Value> *entry = new Node<Value>(k, v);
 			start->setNext(entry);
 			numItems++;
@@ -145,46 +147,95 @@ bool HashMap<Value>::set(std::string k, Value v) {
 }
 
 template<typename Value>
-Value HashMap<Value>::get(std::string k) {
-	unsigned long hashVal = hashFn(k);
+bool HashMap<Value>::set(std::string k, Value& v){
+	set(k, &v);
+}
+
+template<typename Value>
+Value* HashMap<Value>::get(std::string k) {
+	//unsigned long hashVal = (hashFn(k))%tableSize;
+	unsigned long hashVal = (hashFn(k))%10;
 	Node<Value> *start = table[hashVal];
-	if (start == NULL) {
-		return NULL;
+	if (start == nullptr) {
+		return nullptr;
 	}
 	else {
-		while (start != NULL) {
+		while (start != nullptr) {
 			if (start->getKey() == k) {
 				return start->getValue();
 			}
 			start = start->getNext();
 		}
-		return NULL;
+		return nullptr;
 	}
 }
 
 template<typename Value>
-Value HashMap<Value>::delete_(std::string k) {
-	unsigned long hashVal = hashFn(k);
+Value* HashMap<Value>::delete_(std::string k) {
+	//unsigned long hashVal = (hashFn(k))%tableSize;
+	unsigned long hashVal = (hashFn(k))%10;
 	Node<Value> *start = table[hashVal];
-	if (start == NULL) {
-		return NULL;
+	if (start == nullptr) {
+		return nullptr;
 	}
-	else {
-		while (start != NULL) {
-			if (start->getNext()->getKey() == k) {
-				Node<Value> *deleteNode = start->getNext();
-				Value returnValue = deleteNode->getValue();
-				start->setNext(deleteNode->getNext());
-				numItems--;
-				delete deleteNode;
-				return returnValue;
-			}
+	//first item in table
+	if(start->getKey() == k){
+			Node<Value> *deleteNode = start;
+			Value* returnValue = deleteNode->getValue();
+			start = nullptr;
+			numItems--;
+			delete deleteNode;
+			return returnValue;
+	}
+	else{
+		Node<Value> *prev;
+		while(start != nullptr && start->getKey() != k){
+			prev = start;
 			start = start->getNext();
 		}
-		if (start == NULL) {
-			return NULL;
+		//Key doesn't exist
+		if(start == nullptr){ 
+			return nullptr;
 		}
+		prev->setNext(start->getNext());
+		Node<Value> *deleteNode = start;
+		Value* returnValue = deleteNode->getValue();
+		start = nullptr;
+		numItems--;
+		delete deleteNode;
+		return returnValue;
 	}
+	
+
+	// if(start->getKey() == k){
+	// 		Node<Value> *deleteNode = start;
+	// 		Value returnValue = deleteNode->getValue();
+	// 		start = nullptr;
+	// 		numItems--;
+	// 		delete deleteNode;
+	// 		return returnValue;
+	// 	}
+	// else {
+	// 	while (start->getNext() != nullptr) {
+	// 		if (start->getNext()->getKey() == k) {
+	// 			Node<Value> *deleteNode = start->getNext();
+	// 			Value returnValue = deleteNode->getValue();
+	// 			start->setNext(deleteNode->getNext());
+	// 			numItems--;
+	// 			delete deleteNode;
+	// 			return returnValue;
+	// 		}
+	// 	}
+	// 	if(start->getKey() == k){
+	// 		Node<Value> *deleteNode = start;
+	// 		Value returnValue = deleteNode->getValue();
+	// 		start->setNext(deleteNode->getNext());
+	// 		numItems--;
+	// 		delete deleteNode;
+	// 		return returnValue;
+	// 	}
+	// 	return nullptr;		
+	// }
 }
 
 template<typename Value>
