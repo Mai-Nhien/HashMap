@@ -148,7 +148,7 @@ bool HashMap<Value>::set(std::string k, Value* v) {
 
 template<typename Value>
 bool HashMap<Value>::set(std::string k, Value& v){
-	set(k, &v);
+	return set(k, &v);
 }
 
 template<typename Value>
