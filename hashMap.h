@@ -113,7 +113,17 @@ HashMap<Value>::HashMap(int size) {
 
 template<typename Value>
 HashMap<Value>::~HashMap(){
-
+	for(int i = 0; i < tableSize; i++){
+		Node<Value> *curr = table[i];
+		while(curr != nullptr){
+			Node<Value> *temp = curr->getNext();
+			std::cout<< curr->getKey() << std::endl;
+			delete curr;
+			curr = temp;
+		}
+		table[i] = nullptr;
+	}
+	delete [] table;
 }
 
 template<typename Value>
@@ -180,14 +190,13 @@ Value* HashMap<Value>::delete_(std::string k) {
 	}
 	//first item in table
 	if(start->getKey() == k){
-			Node<Value> *deleteNode = start;
-			Value* returnValue = deleteNode->getValue();
-			start = nullptr;
+			Value* returnValue = start->getValue();
 			numItems--;
-			delete deleteNode;
+			table[hashVal] = start->getNext();
+			delete start;
 			return returnValue;
 	}
-	else{
+	else{ //Possibly somewhere in the chain
 		Node<Value> *prev;
 		while(start != nullptr && start->getKey() != k){
 			prev = start;
@@ -197,45 +206,13 @@ Value* HashMap<Value>::delete_(std::string k) {
 		if(start == nullptr){ 
 			return nullptr;
 		}
+		//else remove the node and set its previous to the next node
 		prev->setNext(start->getNext());
-		Node<Value> *deleteNode = start;
-		Value* returnValue = deleteNode->getValue();
-		start = nullptr;
+		Value* returnValue = start->getValue();
 		numItems--;
-		delete deleteNode;
+		delete start;
 		return returnValue;
 	}
-	
-
-	// if(start->getKey() == k){
-	// 		Node<Value> *deleteNode = start;
-	// 		Value returnValue = deleteNode->getValue();
-	// 		start = nullptr;
-	// 		numItems--;
-	// 		delete deleteNode;
-	// 		return returnValue;
-	// 	}
-	// else {
-	// 	while (start->getNext() != nullptr) {
-	// 		if (start->getNext()->getKey() == k) {
-	// 			Node<Value> *deleteNode = start->getNext();
-	// 			Value returnValue = deleteNode->getValue();
-	// 			start->setNext(deleteNode->getNext());
-	// 			numItems--;
-	// 			delete deleteNode;
-	// 			return returnValue;
-	// 		}
-	// 	}
-	// 	if(start->getKey() == k){
-	// 		Node<Value> *deleteNode = start;
-	// 		Value returnValue = deleteNode->getValue();
-	// 		start->setNext(deleteNode->getNext());
-	// 		numItems--;
-	// 		delete deleteNode;
-	// 		return returnValue;
-	// 	}
-	// 	return nullptr;		
-	// }
 }
 
 template<typename Value>

@@ -18,10 +18,13 @@ int main(){
 		}
 	}
 	cout << *(h.delete_("8")) << " should be 6" << endl;
-	if(!h.get("ae")){
+	if(!h.get("8")){
 		cout << "good delete" << endl;
 	}
 	cout << *(h.delete_("BB")) << " should be 2" << endl;
+	if(!h.get("BB")){
+		cout << "good delete" << endl;
+	}
 	cout << *(h.get("4")) << " should be 7" << endl;
 	cout << h.load() << endl;
 
