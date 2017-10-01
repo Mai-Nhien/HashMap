@@ -148,7 +148,9 @@ bool HashMap<Value>::set(std::string k, Value* v) {
 		while (start->getNext() != nullptr && start->getKey() != k) {
 			start = start->getNext();
 		}
-		if (start->getNext() == nullptr) {
+
+		//Insert at the end of the chain
+		if (start->getNext() == nullptr && start->getKey() != k) {
 			Node<Value> *entry = new Node<Value>(k, v);
 			start->setNext(entry);
 			numItems++;
@@ -169,7 +171,6 @@ bool HashMap<Value>::set(std::string k, Value& v){
 template<typename Value>
 Value* HashMap<Value>::get(std::string k) {
 	unsigned long hashVal = (hashFn(k))%tableSize;
-	//unsigned long hashVal = (hashFn(k))%10;
 	Node<Value> *start = table[hashVal];
 	if (start == nullptr) {
 		return nullptr;
@@ -191,7 +192,6 @@ Value* HashMap<Value>::get(std::string k) {
 template<typename Value>
 Value* HashMap<Value>::delete_(std::string k) {
 	unsigned long hashVal = (hashFn(k))%tableSize;
-	//unsigned long hashVal = (hashFn(k))%10;
 	Node<Value> *start = table[hashVal];
 	if (start == nullptr) {
 		return nullptr;
