@@ -1,7 +1,6 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
-
 #include <iostream>
 #include <string>
 #include <functional>
@@ -93,6 +92,7 @@ public:
 	//delete is a keyword in C++, needed to add underscore in the function name
 	Value* delete_(std::string k);
 	float load();
+	void clear();
 
 private:
 	Node<Value> **table;
@@ -113,6 +113,12 @@ HashMap<Value>::HashMap(int size) {
 
 template<typename Value>
 HashMap<Value>::~HashMap(){
+	clear();
+	delete [] table;
+}
+
+template<typename Value>
+void HashMap<Value>::clear(){
 	for(int i = 0; i < tableSize; i++){
 		Node<Value> *curr = table[i];
 		while(curr != nullptr){
@@ -123,13 +129,12 @@ HashMap<Value>::~HashMap(){
 		}
 		table[i] = nullptr;
 	}
-	delete [] table;
+	
 }
 
 template<typename Value>
 bool HashMap<Value>::set(std::string k, Value* v) {
-	unsigned long hashVal= (hashFn(k))%10;
-	//unsigned long hashVal = (hashFn(k))%tableSize;
+	unsigned long hashVal = (hashFn(k))%tableSize;
 	std::cout << "Hash: " << hashVal <<std::endl;
 	Node<Value> *start = table[hashVal];
 	if (start == nullptr) {
@@ -163,8 +168,8 @@ bool HashMap<Value>::set(std::string k, Value& v){
 
 template<typename Value>
 Value* HashMap<Value>::get(std::string k) {
-	//unsigned long hashVal = (hashFn(k))%tableSize;
-	unsigned long hashVal = (hashFn(k))%10;
+	unsigned long hashVal = (hashFn(k))%tableSize;
+	//unsigned long hashVal = (hashFn(k))%10;
 	Node<Value> *start = table[hashVal];
 	if (start == nullptr) {
 		return nullptr;
@@ -172,6 +177,9 @@ Value* HashMap<Value>::get(std::string k) {
 	else {
 		while (start != nullptr) {
 			if (start->getKey() == k) {
+				if(start->getValue() == nullptr){
+					return nullptr;
+				}
 				return start->getValue();
 			}
 			start = start->getNext();
@@ -182,8 +190,8 @@ Value* HashMap<Value>::get(std::string k) {
 
 template<typename Value>
 Value* HashMap<Value>::delete_(std::string k) {
-	//unsigned long hashVal = (hashFn(k))%tableSize;
-	unsigned long hashVal = (hashFn(k))%10;
+	unsigned long hashVal = (hashFn(k))%tableSize;
+	//unsigned long hashVal = (hashFn(k))%10;
 	Node<Value> *start = table[hashVal];
 	if (start == nullptr) {
 		return nullptr;
@@ -194,6 +202,9 @@ Value* HashMap<Value>::delete_(std::string k) {
 			numItems--;
 			table[hashVal] = start->getNext();
 			delete start;
+			if(returnValue == nullptr){
+				return nullptr;
+			}
 			return returnValue;
 	}
 	else{ //Possibly somewhere in the chain
@@ -211,6 +222,9 @@ Value* HashMap<Value>::delete_(std::string k) {
 		Value* returnValue = start->getValue();
 		numItems--;
 		delete start;
+		if(returnValue == nullptr){
+			return nullptr;
+		}
 		return returnValue;
 	}
 }
